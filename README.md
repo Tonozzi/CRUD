@@ -23,6 +23,8 @@ npm start
 Após a execução do projeto, este é o resultado esperado no navegador:
 
 ![Expected result](./docs/img1.png)
+![Expected result](./docs/img2.png)
+![Expected result](./docs/img3.png)
 
 ## Testes
 
