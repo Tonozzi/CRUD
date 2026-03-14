@@ -36,12 +36,10 @@ npm test -- --watchAll=false
 
 ## Introdução
 
-Este projeto contém uma aplicação React criada com Create React App para simular um CRUD estático de séries. A interface foi inspirada no mockup fornecido e permite cadastrar, listar, buscar, editar e excluir registros localmente, sem integração com API ou banco de dados.
-
+Este projeto contém uma aplicação React criada com Create React App para simular um CRUD estático de séries. A aplicação permite cadastrar, listar, buscar, editar e excluir registros localmente, sem integração com API.
 ## Componentes
 
-Os componentes estão no diretório `./src/components` e possuem as seguintes características:
-
+Os componentes estão no diretório `./src/components`.
 - `NavBar`
   - Descrição: este componente renderiza as abas de navegação da aplicação (`Sobre`, `Cadastro` e `Lista de Filmes`) e permite alternar entre as páginas exibidas no painel central.
 
@@ -61,11 +59,10 @@ Os componentes estão no diretório `./src/components` e possuem as seguintes ca
 
 ## Decisões de desenvolvimento
 
-- O CRUD foi implementado de forma estática, utilizando apenas estado local em React.
+
 - O componente `App` centraliza o estado da aplicação e coordena as interações entre formulário, listagem e navegação.
-- A estilização foi mantida leve, priorizando fidelidade ao mockup sem adicionar bibliotecas externas.
-- Os elementos visuais laterais foram adicionados como arquivos SVG locais para facilitar a entrega e a execução.
+- Os elementos visuais são simples, prontos para serem trabalhados posteriormente com uma biblioteca.
 
 ## Conclusão
 
-Este projeto foi desenvolvido para demonstrar conceitos fundamentais de React, como componentização, manipulação de estado, validação de formulário e renderização dinâmica de listas, mantendo uma estrutura simples e objetiva para fins acadêmicos.
+Este projeto foi desenvolvido para demonstrar conceitos fundamentais de react, como componentização, manipulação de estado, validação de formulário e renderização dinâmica de listas, mantendo uma estrutura simples e objetiva.
