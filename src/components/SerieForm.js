@@ -1,25 +1,76 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Alert, Button, Card, Col, Form, Row, Stack } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+import {
+  EMPTY_SERIE,
+  normalizeSeriePayload,
+  validateSerie,
+} from '../utils/series';
 
-const emptyForm = {
-  titulo: '',
-  temporadas: '',
-  dataLancamento: '',
-  diretor: '',
-  produtora: '',
-  categoria: '',
-  dataAssistiu: '',
-};
+const fields = [
+  {
+    name: 'title',
+    label: 'Título',
+    type: 'text',
+    placeholder: 'Ex.: Dark',
+  },
+  {
+    name: 'seasons',
+    label: 'Temporadas',
+    type: 'number',
+    min: 1,
+    placeholder: 'Quantidade de temporadas',
+  },
+  {
+    name: 'releaseDate',
+    label: 'Data de lançamento',
+    type: 'date',
+  },
+  {
+    name: 'director',
+    label: 'Diretor(a)',
+    type: 'text',
+    placeholder: 'Nome da direção principal',
+  },
+  {
+    name: 'production',
+    label: 'Produtora',
+    type: 'text',
+    placeholder: 'Ex.: Netflix, HBO, AMC',
+  },
+  {
+    name: 'category',
+    label: 'Categoria',
+    type: 'text',
+    placeholder: 'Ex.: Drama, Sci-Fi, Comédia',
+  },
+  {
+    name: 'watchedAt',
+    label: 'Data em que assistiu',
+    type: 'date',
+  },
+];
 
-function SerieForm({ onSave, editingSerie, onCancelEdit }) {
-  const [formData, setFormData] = useState(editingSerie ?? emptyForm);
+function SerieForm({
+  initialValues = EMPTY_SERIE,
+  onSave,
+  isEditing = false,
+  isSubmitting = false,
+  submitError = '',
+}) {
+  const [formValues, setFormValues] = useState(initialValues);
   const [errors, setErrors] = useState({});
-  const [feedback, setFeedback] = useState('');
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
+  useEffect(() => {
+    setFormValues(initialValues);
+    setErrors({});
+  }, [initialValues]);
 
-    setFormData((currentForm) => ({
-      ...currentForm,
+  const handleChange = ({ target }) => {
+    const { name, value } = target;
+
+    setFormValues((currentValues) => ({
+      ...currentValues,
       [name]: value,
     }));
 
@@ -29,173 +80,90 @@ function SerieForm({ onSave, editingSerie, onCancelEdit }) {
     }));
   };
 
-  const validateForm = () => {
-    const nextErrors = {};
-
-    if (!formData.titulo.trim()) {
-      nextErrors.titulo = 'Informe o título da série.';
-    }
-
-    if (!formData.temporadas || Number(formData.temporadas) <= 0) {
-      nextErrors.temporadas = 'Informe um número de temporadas.';
-    }
-
-    if (!formData.dataLancamento) {
-      nextErrors.dataLancamento = 'Informe a data de lançamento.';
-    }
-
-    if (!formData.diretor.trim()) {
-      nextErrors.diretor = 'Informe o diretor.';
-    }
-
-    if (!formData.produtora.trim()) {
-      nextErrors.produtora = 'Informe a produtora.';
-    }
-
-    if (!formData.categoria.trim()) {
-      nextErrors.categoria = 'Informe a categoria.';
-    }
-
-    if (!formData.dataAssistiu) {
-      nextErrors.dataAssistiu = 'Informe a data em que assistiu.';
-    }
-
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
-  };
-
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!validateForm()) {
-      setFeedback('Corrija os campos destacados antes de salvar.');
+    const nextErrors = validateSerie(formValues);
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
       return;
     }
 
-    onSave(formData);
-    setFeedback(
-      editingSerie
-        ? 'Série atualizada com sucesso.'
-        : 'Série cadastrada com sucesso.'
-    );
-    setFormData(emptyForm);
-    setErrors({});
+    await onSave(normalizeSeriePayload(formValues));
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
-      <h2>{editingSerie ? 'Editar série' : 'Cadastrar série'}</h2>
+    <Card className="surface-card border-0 shadow-sm">
+      <Card.Body className="p-4 p-xl-5">
+        <div className="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+          <div>
+            <span className="section-kicker">
+              {isEditing ? 'PUT /series' : 'POST /series'}
+            </span>
+            <h2 className="section-title mb-2">
+              {isEditing ? 'Editar série' : 'Cadastrar nova série'}
+            </h2>
+            <p className="section-copy mb-0">
+              Preencha os dados abaixo para salvar as informações na API.
+            </p>
+          </div>
 
-      <div className="form-grid">
-        <label>
-          Título
-          <input
-            name="titulo"
-            type="text"
-            value={formData.titulo}
-            onChange={handleChange}
-            aria-invalid={Boolean(errors.titulo)}
-          />
-          {errors.titulo && <span className="error-text">{errors.titulo}</span>}
-        </label>
+          <div className="hint-chip">
+            Campos obrigatórios 
+          </div>
+        </div>
 
-        <label>
-          Número de Temporadas
-          <input
-            name="temporadas"
-            type="number"
-            min="1"
-            value={formData.temporadas}
-            onChange={handleChange}
-            aria-invalid={Boolean(errors.temporadas)}
-          />
-          {errors.temporadas && (
-            <span className="error-text">{errors.temporadas}</span>
-          )}
-        </label>
-
-        <label>
-          Data de Lançamento da Temporada
-          <input
-            name="dataLancamento"
-            type="date"
-            value={formData.dataLancamento}
-            onChange={handleChange}
-            aria-invalid={Boolean(errors.dataLancamento)}
-          />
-          {errors.dataLancamento && (
-            <span className="error-text">{errors.dataLancamento}</span>
-          )}
-        </label>
-
-        <label>
-          Diretor
-          <input
-            name="diretor"
-            type="text"
-            value={formData.diretor}
-            onChange={handleChange}
-            aria-invalid={Boolean(errors.diretor)}
-          />
-          {errors.diretor && (
-            <span className="error-text">{errors.diretor}</span>
-          )}
-        </label>
-
-        <label>
-          Produtora
-          <input
-            name="produtora"
-            type="text"
-            value={formData.produtora}
-            onChange={handleChange}
-            aria-invalid={Boolean(errors.produtora)}
-          />
-          {errors.produtora && (
-            <span className="error-text">{errors.produtora}</span>
-          )}
-        </label>
-
-        <label>
-          Categoria
-          <input
-            name="categoria"
-            type="text"
-            value={formData.categoria}
-            onChange={handleChange}
-            aria-invalid={Boolean(errors.categoria)}
-          />
-          {errors.categoria && (
-            <span className="error-text">{errors.categoria}</span>
-          )}
-        </label>
-
-        <label>
-          Data em que assistiu
-          <input
-            name="dataAssistiu"
-            type="date"
-            value={formData.dataAssistiu}
-            onChange={handleChange}
-            aria-invalid={Boolean(errors.dataAssistiu)}
-          />
-          {errors.dataAssistiu && (
-            <span className="error-text">{errors.dataAssistiu}</span>
-          )}
-        </label>
-      </div>
-
-      {feedback && <p className="feedback-text">{feedback}</p>}
-
-      <div className="form-actions">
-        <button type="submit">{editingSerie ? 'Atualizar' : 'Cadastrar'}</button>
-        {editingSerie && (
-          <button type="button" onClick={onCancelEdit}>
-            Cancelar edição
-          </button>
+        {submitError && (
+          <Alert variant="danger" className="mb-4">
+            {submitError}
+          </Alert>
         )}
-      </div>
-    </form>
+
+        <Form onSubmit={handleSubmit} noValidate>
+          <Row className="g-4">
+            {fields.map((field) => (
+              <Col md={field.type === 'date' ? 6 : 12} key={field.name}>
+                <Form.Group controlId={field.name}>
+                  <Form.Label>{field.label}</Form.Label>
+                  <Form.Control
+                    name={field.name}
+                    type={field.type}
+                    min={field.min}
+                    placeholder={field.placeholder}
+                    value={formValues[field.name]}
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                    isInvalid={Boolean(errors[field.name])}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors[field.name]}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            ))}
+          </Row>
+
+          <Stack direction="horizontal" gap={2} className="mt-4 flex-wrap">
+            <Button type="submit" variant="warning" disabled={isSubmitting}>
+              {isSubmitting
+                ? 'Salvando...'
+                : isEditing
+                  ? 'Salvar alterações'
+                  : 'Cadastrar série'}
+            </Button>
+            <Button
+              as={Link}
+              to="/series"
+              variant="outline-secondary"
+              disabled={isSubmitting}
+            >
+              Cancelar
+            </Button>
+          </Stack>
+        </Form>
+      </Card.Body>
+    </Card>
   );
 }
 
